@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		
+		<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
+		<style type="text/css">
+			body{
+				background-image: url(/static/image/bgc.jpg)
+			}
+		</style>
+
+	</head>
+	<body>
+		<script src="/static/js/jquery.min.js"></script>
+		<script src="/static/js/bootstrap.min.js"></script>
+		
+		<div class="container">
+			<h2 class="text-center">欢迎来到记账系统</h2>	
+			<form action="#" class="form-group form-horizontal">
+				<div class="row form-group">
+					<div class="col-sm-5">
+						<input type="text" placeholder="请输入要查询的信息" class="form-control">
+						
+					</div>
+					<div class="col-sm-2">
+						<button type="button"  class="btn">查询</button>
+					</div>
+					<div class="col-sm-2">
+						<button type="button" class="btn" id="btn">添加账单</button>
+					</div>
+					<div class="col-sm-2">
+						<p><strong>总支出：{{.totalMoney}}</strong></p>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<!--模态框说明-->
+		<div class="modal fade" id="myModal" tabindex="-1">
+			<!--窗口说明-->
+			<div class="modal-dialog modal-lg">
+				<!--内容说明-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close" data-dismiss="modal">
+							<span>&times;</span>
+						</button>
+						<h4 class="modal-title">添加账单</h4>
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<form action="#">
+								<div class="row form-group">
+									<label for="billId" class="col-sm-2 control-label text-right">编号</label>
+									<div class="col-sm-9">
+										<input type="text" placeholder="账单的编号，只读" readonly="readonly" class="form-control" id="billId">
+									</div>
+
+									<label for="firstname" class="col-sm-2 control-label text-right">钱数</label>
+									<div class="col-sm-9">
+										<input type="text" placeholder="请输入花费的钱数" class="form-control" id="firstname">
+									</div>
+
+									<label for="twoname" class="col-sm-2 control-label text-right">说明</label>
+									<div class="col-sm-9">
+										<input type="text" placeholder="对此账单的说明" class="form-control" id="twoname">
+									</div>
+
+									<label for="threename" class="col-sm-2 control-label text-right">时间</label>
+									<div class="col-sm-9">
+										<input type="text" placeholder="此账单的时间" class="form-control" id="threename">
+									</div>
+
+									<label for="fourname" class="col-sm-2 control-label text-right">类型</label>
+									<div class="col-sm-9">
+										<input type="text" placeholder="此账单的类型" class="form-control" id="fourname">
+									</div>
+								</div>
+						    </form>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-default" id="add">确定</button>
+						<button class="btn btn-default" id="canel">取消</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="col-sm-12">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th style="display:none;">id</th>
+							<th>编号</th>
+							<th>钱数</th>
+							<th>说明</th>
+							<th>时间</th>
+							<th>类型</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{range $i, $v := .totalBill}}
+							<tr>	
+								<td style="display:none;">{{$v.BillId}}</td>
+								<td class="index">{{add $i 1}}</td>
+								<td>{{$v.BillMoney}}</td>
+								<td>{{$v.BillCmt}}</td>
+								<td>{{$v.BillDate}}</td>
+								<td>{{$v.BillCategory}}</td>
+								<td>
+									<button class="btn btn-info btn-xs update">修改</button><button class="btn btn-info btn-xs delete">删除</button>
+								</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<script type="text/javascript">				
+			$('#btn').on('click',function(){
+				$('#myModal').modal('show');
+				$('#billId').val("账单的编号，只读");
+				$('#firstname').val("");
+				$("#twoname").val("");
+				$("#threename").val("");
+				$("#fourname").val("");
+			});
+			$('#canel').on('click',function(){
+				$('#myModal').modal('hide');
+			});
+			$('.update').on('click',function(){
+				var id = $(this).parent().parent().children().eq(0).text();
+				var money = $(this).parent().parent().children().eq(2).text();
+				var cmt = $(this).parent().parent().children().eq(3).text();
+				var date1 = $(this).parent().parent().children().eq(4).text();
+				var category = $(this).parent().parent().children().eq(5).text();
+				
+				$('#myModal').modal('show');
+				$('#billId').val(id);
+				$('#firstname').val(money);
+				$("#twoname").val(cmt);
+				$("#threename").val(date1);
+				$("#fourname").val(category);
+			});
+		</script>
+
+		<script type="text/javascript">
+			$(function(){
+				$('#add').on('click', 
+				function () {
+					var bid = $('#billId').val();
+					var money =$('#firstname').val();
+					var cmt =$("#twoname").val();
+					var date1 =$("#threename").val();
+					var category =$("#fourname").val();
+					alert(bid);
+					if (bid == "账单的编号，只读"){
+						$.ajax({
+							url: 'http://127.0.0.1:3000/bill/manage',
+							type: 'post',
+							async: true,
+							data:JSON.stringify({
+								data:{billMoney: parseInt(money),
+										billCmt: cmt,
+										billDate:date1,
+										billCategory:category
+										},
+								com:'add'
+							}),
+							dataType: 'json',
+							contentType : "application/json;charset=UTF-8",
+							success:function(data){
+								//var dataJson = JSON.parse(data);
+								alert(data.msg);
+								$('#myModal').modal('hide');
+								var element = 0;
+								$(".index").each(function(){
+									element=parseInt($(this).text());
+									$(this).text((element+1).toString())
+								});
+								
+								$('tbody').prepend('<tr><td style="display:none;">' + data.data.billId + '</td><td class="index">1</td><td>' +
+										data.data.billMoney+ "</td><td>" + data.data.billCmt +  "</td><td>" +
+												data.data.billDate + "</td><td>" + data.data.billCategory + 
+													'</td><td><button class="btn btn-info btn-xs update">修改</button><button class="btn btn-info btn-xs delete">删除</button></td></tr>');
+								$('strong').text(((parseInt($('strong').text().slice(4, )) + parseInt(money)).toString()))
+							}
+						});
+					}else {
+						$.ajax({
+							url: 'http://127.0.0.1:3000/bill/manage',
+							type: 'post',
+							async: true,
+							data:JSON.stringify({
+								data:{billMoney: parseInt(money),
+										billCmt: cmt,
+										billDate:date1,
+										billCategory:category,
+										billId:bid
+										},
+								com:'update'
+							}),
+							dataType: 'json',
+							contentType : "application/json;charset=UTF-8",
+							success:function(data){
+								//var dataJson = JSON.parse(data);
+								
+								$('#myModal').modal('hide');
+
+								$('td:contains('+ bid + ')').parent().children().eq(2).text(money);
+								$('td:contains('+ bid + ')').parent().children().eq(3).text(cmt);
+								$('td:contains('+ bid + ')').parent().children().eq(4).text(date1);
+								$('td:contains('+ bid + ')').parent().children().eq(5).text(category);
+							}
+						});
+					}
+					
+				});
+
+				$('.delete').on('click',function(){
+					var bid = $(this).parent().parent().children().eq(0).text();
+					alert(bid)
+					$.ajax({
+						url: 'http://127.0.0.1:3000/bill/manage',
+						type: 'post',
+						async: true,
+						data:JSON.stringify({
+							data:{
+									billId:bid
+								},
+							com:'delete'
+						}),
+						dataType: 'json',
+						contentType : "application/json;charset=UTF-8",
+						success:function(data){
+							alert(data.msg);
+							var element = 0;
+							$('td:contains('+ bid + ')').parent().nextAll("tr").each(function(){
+									element=parseInt($(this).children('.index').text());
+									$(this).children('.index').text((element-1).toString())
+							});
+							var money = $('td:contains('+ bid + ')').parent('tr').children().eq(2).text();
+							$('strong').text($('strong').text().slice(0, 4) + ((parseInt($('strong').text().slice(4, )) - parseInt(money)).toString()))
+
+							$('td:contains('+ bid + ')').parent('tr').remove();
+						}	
+					});
+				});
+			});
+		</script>
+	</body>
+</html>
