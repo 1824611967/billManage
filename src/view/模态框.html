@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+	</head>
+	<body>
+		<script src="js/jquery.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		
+		<!--<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+			点击弹窗
+		</button>-->
+		<button class="btn btn-primary" id="btn">弹窗</button>
+		<!--模态框说明-->
+		<div class="modal fade" id="myModal" tabindex="-1">
+			<!--窗口说明-->
+			<div class="modal-dialog modal-lg">
+				<!--内容说明-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close" data-dismiss="modal">
+							<span>&times;</span>
+						</button>
+						<h4 class="modal-title">会员登录</h4>
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<div class="row">
+								<div class="col-sm-4 text-center">哈哈</div>
+								<div class="col-sm-4 text-center">哈哈</div>
+								<div class="col-sm-4 text-center">哈哈</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-default">注册</button>
+						<button class="btn btn-default">登录</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script type="text/javascript">
+//			$('#myModal').modal({
+//				show:false,
+//				backdrop:true,
+//				keyboard:true,
+//				remote:''
+//			});
+			
+			$('#btn').on('click',function(){
+				$('#myModal').modal('show');
+			});
+			
+			$('#myModal').on('show.bs.modal', function(){
+				alert('显示前');
+			});
+			
+			$('#myModal').on('shown.bs.modal', function(){
+				alert('显示完全后');
+			});
+			$('#myModal').on('hide.bs.modal', function(){
+				alert('要隐藏之前');
+			});
+			$('#myModal').on('hidden.bs.modal', function(){
+				alert('隐藏完全后');
+			});
+		</script>
+	</body>
+</html>
