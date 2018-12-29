@@ -19,17 +19,20 @@
 		
 		<div class="container">
 			<h2 class="text-center">欢迎来到记账系统</h2>	
-			<form action="#" class="form-group form-horizontal">
+			<form action="http://127.0.0.1:3000/bill/search" class="form-group form-horizontal">
 				<div class="row form-group">
 					<div class="col-sm-5">
-						<input type="text" placeholder="请输入要查询的信息" class="form-control">
-						
+						<input type="text" name="keyword" placeholder="请输入要查询的信息" class="form-control">
+						<input type="text" style="display:none;" value="1" name="page">
 					</div>
 					<div class="col-sm-2">
-						<button type="button"  class="btn">查询</button>
+						<input type="submit" class="btn" value="查询">
 					</div>
 					<div class="col-sm-2">
 						<button type="button" class="btn" id="btn">添加账单</button>
+					</div>
+					<div class="col-sm-1">
+						<button type="button" class="btn" id="freash">刷新</button>
 					</div>
 					<div class="col-sm-2">
 						<p><strong>总支出：{{.totalMoney}}</strong></p>
@@ -76,7 +79,12 @@
 
 									<label for="fourname" class="col-sm-2 control-label text-right">类型</label>
 									<div class="col-sm-9">
-										<input type="text" placeholder="此账单的类型" class="form-control" id="fourname">
+										<select class="form-control" id="fourname" autocomplete="off">
+											<option value="生活" selected="selected">生活</option>
+											<option value="娱乐">娱乐</option>
+											<option value="学习">学习</option>
+											<option value="其他">其他</option>
+										</select>	
 									</div>
 								</div>
 						    </form>
@@ -103,7 +111,7 @@
 							<th>类型</th>
 							<th>操作</th>
 						</tr>
-					</thead>
+					</thead> 
 					<tbody>
 						{{range $i, $v := .totalBill}}
 							<tr>	
@@ -122,6 +130,71 @@
 				</table>
 			</div>
 		</div>
+		<div class="container footer navbar-fixed-bottom">
+			<form action="http://localhost:3000/index" class="form-group form-horizontal" onSubmit="return checknum()" method="GET">
+				<div class="row form-group">
+					<table class="table table-striped">
+						<tr>
+							<td id="pageInfo" class="col-offset-sm-5 text-right"><a href="http://localhost:3000/index?pages=1"class="btn">首页</a></td>
+							<td class="col-sm-1"><a class="btn turnPage">上一页</a></td>
+							<td class="col-sm-1"><p class="btn">第{{.presentPage}}页 共{{.billlen}}页</p></td>
+							<td class="col-sm-1"><a class="btn turnPage">下一页</a></td>
+							<td class="col-sm-1"><a href="http://localhost:3000/index?page={{.billlen}}" class="btn">最后一页</a></td>
+							<td class="col-sm-3">转到第:<input type="text" name="page" size="4">页<input type="submit" value="GO"></td>
+						</tr>
+					</table> 
+				</div>
+			</form>
+		</div>
+
+		<script type="text/javascript">
+			$(function(){
+				$('#freash').on('click', function(){
+					window.location.href = "http://127.0.0.1:3000/index"	
+				});
+			});
+		</script>
+		<script type="text/javascript">
+			$(function(){
+				$('.turnPage').on('click', function(){
+					var hrefstr = window.location.href;
+					var strlength = hrefstr.length;
+					var i;
+					for (i=strlength; i>0; i--){
+						if (hrefstr[i] == '='){
+							break;
+						}
+					}
+					if (i > 0){
+						var url = hrefstr.slice(0, i+1);
+					}else{
+						var url = hrefstr + "?page=";
+					}
+
+					var presentPage = {{.presentPage}};
+					var pagelen = {{.billlen}};
+					
+					if ($(this).text() == "上一页"){
+						if (presentPage != 1){
+							var i = presentPage - 1;
+							url = url + i; 
+						}else{
+							return;
+						}
+					}else{
+						if (presentPage != pagelen){
+							var i = presentPage + 1;
+							url = url + i.toString();
+							
+						}else{
+							return;
+						}
+					}
+
+					window.location.href = url;
+				});
+			});
+		</script>
 
 		<script type="text/javascript">				
 			$('#btn').on('click',function(){
@@ -135,20 +208,6 @@
 			$('#canel').on('click',function(){
 				$('#myModal').modal('hide');
 			});
-			$('.update').on('click',function(){
-				var id = $(this).parent().parent().children().eq(0).text();
-				var money = $(this).parent().parent().children().eq(2).text();
-				var cmt = $(this).parent().parent().children().eq(3).text();
-				var date1 = $(this).parent().parent().children().eq(4).text();
-				var category = $(this).parent().parent().children().eq(5).text();
-				
-				$('#myModal').modal('show');
-				$('#billId').val(id);
-				$('#firstname').val(money);
-				$("#twoname").val(cmt);
-				$("#threename").val(date1);
-				$("#fourname").val(category);
-			});
 		</script>
 
 		<script type="text/javascript">
@@ -160,7 +219,7 @@
 					var cmt =$("#twoname").val();
 					var date1 =$("#threename").val();
 					var category =$("#fourname").val();
-					alert(bid);
+					
 					if (bid == "账单的编号，只读"){
 						$.ajax({
 							url: 'http://127.0.0.1:3000/bill/manage',
@@ -181,16 +240,18 @@
 								alert(data.msg);
 								$('#myModal').modal('hide');
 								var element = 0;
-								$(".index").each(function(){
-									element=parseInt($(this).text());
-									$(this).text((element+1).toString())
-								});
+								if (data.code == '200000'){
+									$(".index").each(function(){
+										element=parseInt($(this).text());
+										$(this).text((element+1).toString());
+									});
 								
-								$('tbody').prepend('<tr><td style="display:none;">' + data.data.billId + '</td><td class="index">1</td><td>' +
-										data.data.billMoney+ "</td><td>" + data.data.billCmt +  "</td><td>" +
-												data.data.billDate + "</td><td>" + data.data.billCategory + 
-													'</td><td><button class="btn btn-info btn-xs update">修改</button><button class="btn btn-info btn-xs delete">删除</button></td></tr>');
-								$('strong').text(((parseInt($('strong').text().slice(4, )) + parseInt(money)).toString()))
+									$('tbody').eq(0).prepend('<tr><td style="display:none;">' + data.data.billId + '</td><td class="index">1</td><td>' +
+											data.data.billMoney+ "</td><td>" + data.data.billCmt +  "</td><td>" +
+													data.data.billDate + "</td><td>" + data.data.billCategory + 
+														'</td><td><button class="btn btn-info btn-xs update">修改</button><button class="btn btn-info btn-xs delete">删除</button></td></tr>');
+									$('strong').text($('strong').text().slice(0, 4) + ((parseInt($('strong').text().slice(4, )) + parseInt(money)).toString()));
+								}
 							}
 						});
 					}else {
@@ -211,47 +272,67 @@
 							contentType : "application/json;charset=UTF-8",
 							success:function(data){
 								//var dataJson = JSON.parse(data);
-								
+								alert(data.msg);
 								$('#myModal').modal('hide');
-
-								$('td:contains('+ bid + ')').parent().children().eq(2).text(money);
-								$('td:contains('+ bid + ')').parent().children().eq(3).text(cmt);
-								$('td:contains('+ bid + ')').parent().children().eq(4).text(date1);
-								$('td:contains('+ bid + ')').parent().children().eq(5).text(category);
+								if (data.code == '200000'){
+									$('td:contains('+ bid + ')').parent().children().eq(2).text(money);
+									$('td:contains('+ bid + ')').parent().children().eq(3).text(cmt);
+									$('td:contains('+ bid + ')').parent().children().eq(4).text(date1);
+									$('td:contains('+ bid + ')').parent().children().eq(5).text(category);
+								}
 							}
 						});
 					}
 					
 				});
 
-				$('.delete').on('click',function(){
-					var bid = $(this).parent().parent().children().eq(0).text();
-					alert(bid)
-					$.ajax({
-						url: 'http://127.0.0.1:3000/bill/manage',
-						type: 'post',
-						async: true,
-						data:JSON.stringify({
-							data:{
-									billId:bid
-								},
-							com:'delete'
-						}),
-						dataType: 'json',
-						contentType : "application/json;charset=UTF-8",
-						success:function(data){
-							alert(data.msg);
-							var element = 0;
-							$('td:contains('+ bid + ')').parent().nextAll("tr").each(function(){
-									element=parseInt($(this).children('.index').text());
-									$(this).children('.index').text((element-1).toString())
-							});
-							var money = $('td:contains('+ bid + ')').parent('tr').children().eq(2).text();
-							$('strong').text($('strong').text().slice(0, 4) + ((parseInt($('strong').text().slice(4, )) - parseInt(money)).toString()))
+				$('body').on('click', '.update', function(){
+					var id = $(this).parent().parent().children().eq(0).text();
+					var money = $(this).parent().parent().children().eq(2).text();
+					var cmt = $(this).parent().parent().children().eq(3).text();
+					var date1 = $(this).parent().parent().children().eq(4).text();
+					var category = $(this).parent().parent().children().eq(5).text();
+					
+					$('#myModal').modal('show');
+					$('#billId').val(id);
+					$('#firstname').val(money);
+					$("#twoname").val(cmt);
+					$("#threename").val(date1);
+					$("#fourname").val(category);
+				});
+				
+				$('body').on('click', '.delete', function(){
+					if(confirm("确定删除该账单?")){
+ 　　					//点击确定后操作
+ 						var bid = $(this).parent().parent().children().eq(0).text();
+						$.ajax({
+							url: 'http://127.0.0.1:3000/bill/manage',
+							type: 'post',
+							async: true,
+							data:JSON.stringify({
+								data:{
+										billId:bid
+									},
+								com:'delete'
+							}),
+							dataType: 'json',
+							contentType : "application/json;charset=UTF-8",
+							success:function(data){
+								alert(data.msg);
+								var element = 0;
+								if (data.code == '200000'){
+									$('td:contains('+ bid + ')').parent().nextAll("tr").each(function(){
+										element=parseInt($(this).children('.index').text());
+										$(this).children('.index').text((element-1).toString());
+									});
+									var money = $('td:contains('+ bid + ')').parent('tr').children().eq(2).text();
+									$('strong').text($('strong').text().slice(0, 4) + ((parseInt($('strong').text().slice(4, )) - parseInt(money)).toString()));
 
-							$('td:contains('+ bid + ')').parent('tr').remove();
-						}	
-					});
+									$('td:contains('+ bid + ')').parent('tr').remove();
+								}
+							}	
+						});
+					}
 				});
 			});
 		</script>
