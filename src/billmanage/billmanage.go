@@ -37,7 +37,6 @@ func billPageFunc(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if r := recover(); r != nil {
 			FindPagefunc(w, 1)
-			fmt.Println("sss")
 		}
 	}()
 
@@ -66,6 +65,12 @@ func searchBill(w http.ResponseWriter, r *http.Request) {
 
 	keyword := r.Form["keyword"][0]
 	page, _ := strconv.Atoi(r.Form["page"][0])
+
+	defer func() {
+		if r := recover(); r != nil {
+			FindPagefunc(w, 1)
+		}
+	}()
 
 	sql1 := "select * from Bill where b_money >= " + keyword
 	sql2 := "select * from Bill where b_category like '" + keyword + "'"
@@ -122,7 +127,7 @@ func searchBill(w http.ResponseWriter, r *http.Request) {
 func getSqlBill(sql string) []accessory.Bill {
 	var bill accessory.Bill
 	var bills []accessory.Bill
-	var parse_time time.Time
+	var parseTime time.Time
 
 	result, err := dbslite.Db.Query(sql)
 
@@ -132,9 +137,9 @@ func getSqlBill(sql string) []accessory.Bill {
 	}
 
 	for result.Next() {
-		err = result.Scan(&bill.BillId, &bill.BillMoney, &bill.BillCmt, &parse_time, &bill.BillCategory)
+		err = result.Scan(&bill.BillId, &bill.BillMoney, &bill.BillCmt, &parseTime, &bill.BillCategory)
 
-		bill.BillDate = parse_time.Format("2006-01-02")
+		bill.BillDate = parseTime.Format("2006-01-02")
 		if err != nil {
 			fmt.Println(err)
 			return bills
@@ -150,9 +155,9 @@ func getSqlBill(sql string) []accessory.Bill {
 func FindPagefunc(w http.ResponseWriter, page int) {
 	var bill accessory.Bill
 	var bills []accessory.Bill
-	var parse_time time.Time
+	var parseTime time.Time
 	var i int
-	sql := "select * from (select Bill.*,rownum rc from Bill where rownum <= " + strconv.Itoa((page)*18) + ") Bill where Bill.rc >= " + strconv.Itoa((page-1)*18+1)
+	sql := "select * from (select Bill.*,rownum rc from Bill where rownum <= " + strconv.Itoa((page)*18) + " order by Bill.b_date desc) Bill where Bill.rc >= " + strconv.Itoa((page-1)*18+1)
 
 	result, err := dbslite.Db.Query(sql)
 
@@ -162,9 +167,9 @@ func FindPagefunc(w http.ResponseWriter, page int) {
 	}
 
 	for result.Next() {
-		err = result.Scan(&bill.BillId, &bill.BillMoney, &bill.BillCmt, &parse_time, &bill.BillCategory, &i)
+		err = result.Scan(&bill.BillId, &bill.BillMoney, &bill.BillCmt, &parseTime, &bill.BillCategory, &i)
 
-		bill.BillDate = parse_time.Format("2006-01-02")
+		bill.BillDate = parseTime.Format("2006-01-02")
 		if err != nil {
 			fmt.Println(err)
 			return
